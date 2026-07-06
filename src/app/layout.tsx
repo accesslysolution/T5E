@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar"; 
 import Footer from "@/components/Footer";
+import Preloader from "@/components/Preloader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-screen flex flex-col bg-white text-zinc-900">
+      {/* Set bg-[#1C2B1E] here to match your site's primary theme */}
+      <body className="min-h-screen flex flex-col bg-[#1C2B1E] text-white">
+        <Preloader />
+        
         <Navbar />
         
         {/* flex-1 ensures the footer stays at the bottom even on short pages */}
