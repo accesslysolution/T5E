@@ -57,17 +57,22 @@ export default function Contact() {
               {[
                 {
                   label: "Call us",
-                  value: "+91 98765 43210",
+                  value: "+91 91755 90507",
                   sub: "Mon–Sat, 10am–7pm",
                 },
                 {
+                  label: "Alternative Number",
+                  value: "+91 75582 99969",
+                  sub: "For general enquiries",
+                },
+                {
                   label: "Write to us",
-                  value: "hello@the5elements.in",
+                  value: "info@t5e.co.in",
                   sub: "We respond within 24 hours",
                 },
                 {
-                  label: "Visit us",
-                  value: "Kalyani Nagar, Pune – 411006",
+                  label: "Corp Office",
+                  value: "Office No. 23, Building C2, Bramha Estate, Nr Jyoti Restaurant, Kondhwa Kh, Pune - 411048",
                   sub: "By appointment preferred",
                 },
               ].map((c) => (
@@ -80,7 +85,7 @@ export default function Contact() {
                     <p className="text-[#C9A84C]/50 text-xs tracking-widest uppercase mb-1">
                       {c.label}
                     </p>
-                    <p className="text-white text-base">{c.value}</p>
+                    <p className="text-white text-base leading-relaxed">{c.value}</p>
                     <p className="text-white/30 text-xs mt-0.5">{c.sub}</p>
                   </div>
                 </div>
@@ -157,21 +162,12 @@ export default function Contact() {
                     onChange={(e) => setForm({ ...form, project: e.target.value })}
                     className="w-full bg-white/5 border border-white/10 text-white/70 px-4 py-3 text-sm focus:border-[#C9A84C]/50 focus:outline-none transition-colors appearance-none cursor-pointer"
                   >
-                    <option value="" className="bg-[#1C2B1E]">
-                      Select a project
-                    </option>
-                    <option value="prithvi" className="bg-[#1C2B1E]">
-                      Prithvi Heights – Wagholi
-                    </option>
-                    <option value="akash" className="bg-[#1C2B1E]">
-                      Akash Residency – Kharadi
-                    </option>
-                    <option value="vayu" className="bg-[#1C2B1E]">
-                      Vayu Greens – Baner
-                    </option>
-                    <option value="other" className="bg-[#1C2B1E]">
-                      Not sure yet
-                    </option>
+                    <option value="" className="bg-[#1C2B1E]">Select a project</option>
+                    <option value="chaitanya" className="bg-[#1C2B1E]">Siddhivinayak Chaitanya</option>
+                    <option value="apex" className="bg-[#1C2B1E]">T5E Apex</option>
+                    <option value="vishwa" className="bg-[#1C2B1E]">Siddhivinayak Vishwa</option>
+                    <option value="vishwa" className="bg-[#1C2B1E]">The Elements</option>
+                    <option value="other" className="bg-[#1C2B1E]">Not sure yet</option>
                   </select>
                 </div>
 
@@ -197,7 +193,6 @@ export default function Contact() {
 
                 <p className="text-white/20 text-xs text-center">
                   By enquiring, you agree to be contacted by The 5 Elements team.
-                  No spam, ever.
                 </p>
               </form>
             )}

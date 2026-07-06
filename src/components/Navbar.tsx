@@ -15,9 +15,10 @@ export default function Navbar() {
   }, []);
 
   const links = [
+    { label: "About", href: "/about" },      // Added About
     { label: "Projects", href: "/#projects" },
     { label: "Philosophy", href: "/#philosophy" },
-    { label: "Environment", href: "/environment" }, // Separate page route
+    { label: "Environment", href: "/environment" },
     { label: "Legacy", href: "/#legacy" },
     { label: "Contact", href: "/#contact" },
   ];
