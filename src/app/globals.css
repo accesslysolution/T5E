@@ -1,71 +1,447 @@
 @import "tailwindcss";
 
+/* ============================================================
+   THE 5 ELEMENTS — Global Design System
+   Premium luxury real estate · Light + Glass theme
+   ============================================================ */
+
 :root {
-  /* Brand Palette */
+  /* ── Brand Core ── */
   --brand-gold: #c9a84c;
+  --brand-gold-light: #e2c97e;
+  --brand-gold-dark: #a8852f;
+  --brand-gold-muted: rgba(201, 168, 76, 0.15);
   --brand-dark: #1c2b1e;
-  
-  /* System Defaults */
-  --background: #ffffff;
+  --brand-dark-soft: #243323;
+
+  /* ── Luxury Neutrals ── */
+  --cream: #f8f5ef;
+  --cream-deep: #f0ead8;
+  --warm-white: #fdfcf9;
+  --stone: #e8e0d0;
+  --stone-dark: #c4b99a;
+
+  /* ── Glass System ── */
+  --glass-white: rgba(255, 255, 255, 0.72);
+  --glass-white-strong: rgba(255, 255, 255, 0.88);
+  --glass-cream: rgba(248, 245, 239, 0.75);
+  --glass-gold: rgba(201, 168, 76, 0.10);
+  --glass-gold-border: rgba(201, 168, 76, 0.28);
+  --glass-dark: rgba(28, 43, 30, 0.72);
+  --glass-blur: 18px;
+  --glass-blur-sm: 10px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 2px 12px rgba(28, 43, 30, 0.06);
+  --shadow-md: 0 8px 32px rgba(28, 43, 30, 0.10);
+  --shadow-lg: 0 20px 60px rgba(28, 43, 30, 0.14);
+  --shadow-xl: 0 32px 80px rgba(28, 43, 30, 0.18);
+  --shadow-gold: 0 4px 24px rgba(201, 168, 76, 0.20);
+  --shadow-gold-lg: 0 12px 48px rgba(201, 168, 76, 0.28);
+
+  /* ── Typography ── */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+
+  /* ── Motion ── */
+  --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 200ms;
+  --duration-base: 350ms;
+  --duration-slow: 600ms;
+  --duration-xslow: 900ms;
+
+  /* ── Spacing Tokens ── */
+  --section-pad-y: clamp(5rem, 10vw, 9rem);
+  --section-pad-x: clamp(1.25rem, 5vw, 5rem);
+
+  /* ── Border Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* ── System ── */
+  --background: var(--warm-white);
   --foreground: #171717;
 }
 
+/* ============================================================
+   Tailwind Theme Bridge
+   ============================================================ */
 @theme inline {
   /* Fonts */
-  --font-playfair: "Playfair Display", serif;
-  
-  /* Colors */
+  --font-playfair: var(--font-display);
+  --font-jakarta: var(--font-body);
+
+  /* Brand */
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-light: var(--brand-gold-light);
+  --color-brand-gold-dark: var(--brand-gold-dark);
+  --color-brand-dark: var(--brand-dark);
+  --color-cream: var(--cream);
+  --color-cream-deep: var(--cream-deep);
+  --color-warm-white: var(--warm-white);
+  --color-stone: var(--stone);
+
+  /* System */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand-gold: var(--brand-gold);
-  --color-brand-dark: var(--brand-dark);
-  
-  /* System variables */
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-jakarta);
   --font-mono: var(--font-geist-mono);
 }
 
+/* ============================================================
+   Base Layer
+   ============================================================ */
 @layer base {
   html {
     scroll-behavior: smooth;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply antialiased bg-white text-zinc-900;
+    font-family: var(--font-body);
+    background-color: var(--warm-white);
+    color: var(--foreground);
+    line-height: 1.7;
+    overflow-x: hidden;
   }
 
-  /* Selection styling */
+  /* Premium text selection */
   ::selection {
-    background-color: rgba(201, 168, 76, 0.3);
+    background-color: rgba(201, 168, 76, 0.25);
     color: var(--brand-dark);
+  }
+
+  /* Focus ring — gold tinted */
+  :focus-visible {
+    outline: 2px solid var(--brand-gold);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Heading defaults — Playfair */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  /* Paragraph defaults */
+  p {
+    font-family: var(--font-body);
+    line-height: 1.75;
+  }
+
+  /* Image defaults */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
   }
 }
 
+/* ============================================================
+   Utility Layer
+   ============================================================ */
 @layer utilities {
-  .font-playfair {
-    font-family: var(--font-playfair);
+
+  /* ── Font Families ── */
+  .font-playfair { font-family: var(--font-display); }
+  .font-jakarta  { font-family: var(--font-body); }
+
+  /* ── Gold Gradient Text ── */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, var(--brand-gold-light) 0%, var(--brand-gold) 45%, var(--brand-gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
+  .text-gold-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--brand-gold-dark) 0%,
+      var(--brand-gold-light) 35%,
+      var(--brand-gold) 50%,
+      var(--brand-gold-light) 65%,
+      var(--brand-gold-dark) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+
+  /* ── Glass Surfaces ── */
+  .glass {
+    background: var(--glass-white);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .glass-cream {
+    background: var(--glass-cream);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid rgba(201, 168, 76, 0.15);
+  }
+
+  .glass-gold {
+    background: var(--glass-gold);
+    backdrop-filter: blur(var(--glass-blur-sm));
+    -webkit-backdrop-filter: blur(var(--glass-blur-sm));
+    border: 1px solid var(--glass-gold-border);
+  }
+
+  .glass-dark {
+    background: var(--glass-dark);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid rgba(201, 168, 76, 0.15);
+  }
+
+  /* ── Luxury Shadows ── */
+  .shadow-luxury-sm { box-shadow: var(--shadow-sm); }
+  .shadow-luxury    { box-shadow: var(--shadow-md); }
+  .shadow-luxury-lg { box-shadow: var(--shadow-lg); }
+  .shadow-luxury-xl { box-shadow: var(--shadow-xl); }
+  .shadow-gold      { box-shadow: var(--shadow-gold); }
+  .shadow-gold-lg   { box-shadow: var(--shadow-gold-lg); }
+
+  /* ── Section Spacing ── */
+  .section-pad {
+    padding-top: var(--section-pad-y);
+    padding-bottom: var(--section-pad-y);
+    padding-left: var(--section-pad-x);
+    padding-right: var(--section-pad-x);
+  }
+
+  /* ── Gold Divider ── */
+  .divider-gold {
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--brand-gold), transparent);
+    margin: 0 auto;
+  }
+
+  .divider-gold-left {
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--brand-gold), transparent);
+  }
+
+  /* ── Label / Eyebrow ── */
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brand-gold);
+  }
+
+  /* ── Writing Mode ── */
   .writing-mode-vertical {
     writing-mode: vertical-rl;
     text-orientation: mixed;
   }
+
+  /* ── Luxury Transition ── */
+  .transition-luxury {
+    transition: all var(--duration-base) var(--ease-luxury);
+  }
+
+  .transition-slow {
+    transition: all var(--duration-slow) var(--ease-luxury);
+  }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* ============================================================
+   Component Layer — Reusable Glass Cards, Buttons etc.
+   ============================================================ */
+@layer components {
+
+  /* Premium Button Base */
+  .btn-luxury {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.85rem 2.2rem;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all var(--duration-base) var(--ease-luxury);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-luxury::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+  }
+
+  .btn-luxury:hover::after { opacity: 1; }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--brand-gold-light) 0%, var(--brand-gold) 50%, var(--brand-gold-dark) 100%);
+    color: var(--brand-dark);
+    box-shadow: var(--shadow-gold);
+  }
+
+  .btn-gold:hover {
+    box-shadow: var(--shadow-gold-lg);
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  .btn-outline-gold {
+    background: transparent;
+    color: var(--brand-gold);
+    border: 1px solid var(--glass-gold-border);
+  }
+
+  .btn-outline-gold:hover {
+    background: var(--glass-gold);
+    border-color: var(--brand-gold);
+    transform: translateY(-2px);
+  }
+
+  /* Glass Card */
+  .card-glass {
+    background: var(--glass-white);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: all var(--duration-base) var(--ease-luxury);
+  }
+
+  .card-glass:hover {
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(201, 168, 76, 0.15);
+    transform: translateY(-4px);
+  }
+
+  /* Luxury Input */
+  .input-luxury {
+    width: 100%;
+    background: var(--glass-cream);
+    backdrop-filter: blur(var(--glass-blur-sm));
+    border: 1px solid var(--stone);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--foreground);
+    transition: all var(--duration-base) var(--ease-luxury);
+    outline: none;
+  }
+
+  .input-luxury::placeholder {
+    color: var(--stone-dark);
+    font-size: 0.875rem;
+  }
+
+  .input-luxury:focus {
+    border-color: var(--brand-gold);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+    background: var(--glass-white-strong);
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: #f4f4f5;
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
 
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 168, 76, 0); }
+  50%       { box-shadow: 0 0 0 8px rgba(201, 168, 76, 0.12); }
+}
+
+@keyframes draw-line {
+  from { width: 0; }
+  to   { width: 3rem; }
+}
+
+/* Animation utility classes */
+.animate-float     { animation: float-gentle 6s ease-in-out infinite; }
+.animate-fade-up   { animation: fade-up var(--duration-slow) var(--ease-luxury) both; }
+.animate-fade-in   { animation: fade-in var(--duration-slow) var(--ease-luxury) both; }
+.animate-scale-in  { animation: scale-in var(--duration-slow) var(--ease-luxury) both; }
+.animate-pulse-gold { animation: pulse-gold 2.5s ease-in-out infinite; }
+
+/* Stagger helpers */
+.delay-100  { animation-delay: 100ms; }
+.delay-200  { animation-delay: 200ms; }
+.delay-300  { animation-delay: 300ms; }
+.delay-400  { animation-delay: 400ms; }
+.delay-500  { animation-delay: 500ms; }
+.delay-700  { animation-delay: 700ms; }
+.delay-900  { animation-delay: 900ms; }
+.delay-1100 { animation-delay: 1100ms; }
+
+/* ============================================================
+   Scrollbar — Premium
+   ============================================================ */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
 ::-webkit-scrollbar-thumb {
-  background: #c9a84c80;
+  background: rgba(201, 168, 76, 0.45);
   border-radius: 4px;
+  transition: background var(--duration-fast);
 }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-gold); }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--brand-gold);
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.45) var(--cream); }
+
+/* ============================================================
+   Reduced Motion — Respect user preference
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
 }

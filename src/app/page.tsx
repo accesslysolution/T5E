@@ -7,9 +7,13 @@ import Contact from "@/components/Contact";
 
 export default function Home() {
   return (
-    // We remove the fragment <> and wrap in a div if needed for specific page-level padding,
-    // though the current structure is perfect for full-width sections.
-    <div className="flex flex-col w-full">
+    /*
+     * Each section is independently responsible for its own
+     * scroll-reveal animations via Framer Motion (whileInView).
+     * This wrapper is intentionally minimal — sections breathe
+     * at their own pace.
+     */
+    <div className="flex flex-col w-full overflow-x-hidden">
       <Hero />
       <StatsBand />
       <Philosophy />
