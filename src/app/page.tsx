@@ -4,6 +4,7 @@ import Philosophy from "@/components/Philosophy";
 import Projects from "@/components/Projects";
 import Legacy from "@/components/Legacy";
 import Contact from "@/components/Contact";
+import VideoShowcase from "@/components/video";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
      */
     <div className="flex flex-col w-full overflow-x-hidden">
       <Hero />
+      <VideoShowcase />
       <StatsBand />
       <Philosophy />
       <Projects />
