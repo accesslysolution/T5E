@@ -18,8 +18,8 @@ export default function Home() {
       <Hero />
       <VideoShowcase />
       <StatsBand />
-      <Philosophy />
       <Projects />
+      <Philosophy />
       <Legacy />
       <Contact />
     </div>

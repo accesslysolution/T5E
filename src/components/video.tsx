@@ -35,7 +35,7 @@ export default function VideoShowcase() {
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: false, amount: 0.3 }}
         >
           <motion.div variants={fadeUpVariant} className="flex items-center gap-4 mb-6">
             <span className="w-12 h-px bg-[#c9a84c]"></span>
@@ -73,7 +73,7 @@ export default function VideoShowcase() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: false, amount: 0.2 }}
         >
           {/* Outer elegant frame */}
           <div className="relative p-2 md:p-3 bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(28,43,30,0.15)] border border-gray-100">
