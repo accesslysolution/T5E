@@ -1,208 +1,486 @@
 'use client';
 
+import React, { useEffect, useRef, useState, useId } from 'react';
 import Image from 'next/image';
-import { motion, Variants } from 'framer-motion';
+import {
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  useReducedMotion,
+  type MotionValue,
+  type Variants,
+} from 'framer-motion';
+import './hero.css';
 
-export default function HeroSection() {
-  const riseUpVariant: Variants = {
-    hidden: { opacity: 0, y: 60 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } 
-    },
-  };
+/* -------------------------------------------------------------------------- */
+/*  useStickyGuard                                                             */
+/*  position: sticky fails silently when any scroll ancestor clips overflow.   */
+/*  The usual offender is `overflow-x: hidden` on html/body/main, added to     */
+/*  kill horizontal scroll. `clip` does the same job without creating a        */
+/*  scroll container, so we swap it — and warn about anything we can't fix.    */
+/* -------------------------------------------------------------------------- */
 
-  const containerVariant: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-      },
-    },
-  };
+function useStickyGuard(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const undo: Array<() => void> = [];
+    const blockers: HTMLElement[] = [];
+
+    const chain: HTMLElement[] = [];
+    let node: HTMLElement | null = ref.current.parentElement;
+    while (node) {
+      chain.push(node);
+      node = node.parentElement;
+    }
+    chain.push(document.body, document.documentElement);
+
+    for (const el of chain) {
+      const cs = getComputedStyle(el);
+
+      if (cs.overflowX === 'hidden') {
+        const prev = el.style.overflowX;
+        el.style.overflowX = 'clip';
+        undo.push(() => {
+          el.style.overflowX = prev;
+        });
+      }
+
+      // A clipped or scrolling Y axis is a genuine scroll container. Changing
+      // it could break the page layout, so flag it instead of touching it.
+      const clipsY = cs.overflowY !== 'visible' && cs.overflowY !== 'clip';
+      if (clipsY && cs.overflowY !== 'auto') blockers.push(el);
+    }
+
+    if (process.env.NODE_ENV !== 'production' && blockers.length) {
+      console.warn(
+        '[T5E Hero] These ancestors clip vertical overflow and will break the ' +
+          'sticky scrub. Remove overflow-hidden from them:',
+        blockers
+      );
+    }
+
+    return () => undo.forEach((fn) => fn());
+  }, [ref]);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Chapter                                                                    */
+/* -------------------------------------------------------------------------- */
+
+interface ChapterProps {
+  progress: MotionValue<number>;
+  /** Strictly increasing: [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd] */
+  range: [number, number, number, number];
+  align?: 'left' | 'right';
+  children: React.ReactNode;
+}
+
+function Chapter({ progress, range, align = 'left', children }: ChapterProps) {
+  const opacity = useTransform(progress, range, [0, 1, 1, 0]);
+  const y = useTransform(progress, range, [40, 0, 0, -40]);
+  const scale = useTransform(progress, range, [0.97, 1, 1, 1.015]);
+  const pointerEvents = useTransform(progress, (v) =>
+    v > range[1] - 0.02 && v < range[2] + 0.02 ? 'auto' : 'none'
+  );
 
   return (
-    <main className="relative min-h-screen bg-[#f4f4f2] overflow-hidden px-6 pb-8 pt-24 md:px-12 md:pb-12 md:pt-32 font-sans rounded-3xl mx-2 my-2 flex flex-col justify-center">
-      
-      {/* Background Hero Image (Shared across screens) */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+    <motion.div
+      style={{ opacity, y, scale, pointerEvents }}
+      className={`t5e-chapter ${align === 'right' ? 't5e-chapter--right' : ''}`}
+    >
+      <div className="t5e-glass">{children}</div>
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Shared content                                                             */
+/* -------------------------------------------------------------------------- */
+
+const PILLS = ['Premium Estates', 'Inspired by Nature', 'Urban Sanctuaries'];
+
+function Pills() {
+  return (
+    <div className="t5e-pills">
+      {PILLS.map((pill) => (
+        <span key={pill} className="t5e-pill">
+          {pill}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Actions() {
+  return (
+    <div className="t5e-actions">
+      <button type="button" className="t5e-btn t5e-btn--primary">
+        Book a site visit
+      </button>
+      <button type="button" className="t5e-btn t5e-btn--ghost">
+        Download brochure
+      </button>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  MobileHero                                                                 */
+/*  No scrubbing here by design: iOS seeks slowly, and the every-frame-keyframe */
+/*  encode the desktop scrub needs is far too heavy for a mobile connection.    */
+/*  A short muted loop gives the same cinematic feel for a fraction of the      */
+/*  bytes — and the poster still carries LCP.                                   */
+/* -------------------------------------------------------------------------- */
+
+const rise: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const stagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.15 } },
+};
+
+function MobileHero({
+  headlineId,
+  allowVideo,
+}: {
+  headlineId: string;
+  allowVideo: boolean;
+}) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+
+  // Hold the video back until the poster has painted, so it never competes
+  // with LCP. requestIdleCallback where available, a timeout everywhere else.
+  useEffect(() => {
+    if (!allowVideo) return;
+
+    const conn = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+
+    if (conn?.saveData) return;
+    if (conn?.effectiveType && /2g|slow-2g|3g/.test(conn.effectiveType)) return;
+
+    const load = () => setSrc('/hero-mobile.mp4');
+    const ric = (window as Window & { requestIdleCallback?: (cb: () => void) => number })
+      .requestIdleCallback;
+
+    if (ric) {
+      const id = ric(load);
+      return () => {
+        const cancel = (
+          window as Window & { cancelIdleCallback?: (h: number) => void }
+        ).cancelIdleCallback;
+        cancel?.(id);
+      };
+    }
+
+    const t = window.setTimeout(load, 900);
+    return () => window.clearTimeout(t);
+  }, [allowVideo]);
+
+  return (
+    <section className="t5e-mobile" aria-labelledby={headlineId}>
+      <div className="t5e-mobile__media">
         <Image
-          src="/img/hero.avif"
-          alt="T5E Luxury Real Estate Development"
+          src="/img/hero-poster.jpg"
+          alt="T5E — The 5 Elements, a residential development in Wagholi, Pune, at dusk"
           fill
-          sizes="100vw"
-          className="object-cover object-center"
           priority
+          sizes="100vw"
+          className="t5e-media__img"
         />
-        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#f4f4f2]/95 via-[#f4f4f2]/80 md:via-[#f4f4f2]/60 to-transparent"></div>
+        {src && (
+          <video
+            src={src}
+            muted
+            loop
+            autoPlay
+            playsInline
+            preload="none"
+            disablePictureInPicture
+            aria-hidden="true"
+            onCanPlay={() => setReady(true)}
+            className={`t5e-media__video ${ready ? 'is-ready' : ''}`}
+          />
+        )}
+        <div className="t5e-scrim t5e-scrim--mobile" aria-hidden="true" />
       </div>
 
-      {/* =========================================================
-          DESKTOP VIEW (Original Layout - Hidden on Mobile)
-         ========================================================= */}
-      <div className="relative z-20 hidden md:grid grid-cols-1 lg:grid-cols-2 gap-8 h-full items-center">
-        
-        {/* Left Column: Animated Text Content */}
-        <motion.div 
-          className="flex flex-col"
-          variants={containerVariant}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: false, amount: 0.2 }}
-        >
-          {/* Top category tags */}
-          <motion.div variants={riseUpVariant} className="flex flex-wrap gap-3 mb-8">
-            <span className="px-4 py-1.5 text-xs font-semibold text-[#1C2B1E] border border-[#1C2B1E]/20 bg-white/40 backdrop-blur-md rounded-full shadow-sm">
-              Premium Estates
-            </span>
-            <span className="px-4 py-1.5 text-xs font-semibold text-[#1C2B1E] border border-[#1C2B1E]/20 bg-white/40 backdrop-blur-md rounded-full shadow-sm">
-              Inspired by Nature
-            </span>
-            <span className="px-4 py-1.5 text-xs font-semibold text-[#1C2B1E] border border-[#1C2B1E]/20 bg-white/40 backdrop-blur-md rounded-full shadow-sm">
-              Urban Sanctuaries
-            </span>
+      <header className="t5e-brandbar">
+        <span className="t5e-mark">T5E</span>
+        <span className="t5e-brandbar__place">Wagholi, Pune</span>
+      </header>
+
+      <motion.div
+        className="t5e-mobile__body"
+        variants={stagger}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="t5e-glass">
+          <motion.div variants={rise}>
+            <Pills />
           </motion.div>
 
-          {/* Heading */}
-          <motion.h1 
-            variants={riseUpVariant}
-            className="text-6xl md:text-8xl font-bold text-[#1C2B1E] leading-[1.1] tracking-tighter drop-shadow-sm"
-          >
-            <div className="flex items-center gap-4">
-              <button className="w-12 h-12 flex items-center justify-center border border-[#1C2B1E]/30 rounded-full text-xl hover:bg-[#1C2B1E]/5 backdrop-blur-sm transition-colors text-[#1C2B1E]">
-                ✦
-              </button>
-              REDEFINING
-            </div>
-            <div className="flex items-center gap-4">
-              LIVING
-            </div>
+          <motion.h1 variants={rise} id={headlineId} className="t5e-display">
+            Redefining
+            <span className="t5e-display__accent">Living</span>
           </motion.h1>
 
-          {/* Subtext */}
-          <motion.p 
-            variants={riseUpVariant}
-            className="mt-6 text-base md:text-lg text-gray-800 max-w-lg leading-relaxed font-medium drop-shadow-sm"
-          >
-            Welcome to <strong className="text-[#1C2B1E]">The 5 Elements (T5E)</strong>. 
-            We develop visionary spaces where luxury meets sustainability, crafting 
-            environments designed in perfect harmony with nature to elevate your everyday life.
+          <motion.p variants={rise} className="t5e-body">
+            Visionary spaces where luxury meets sustainability, designed in
+            harmony with nature.
           </motion.p>
 
-          {/* Embedded YouTube Video */}
-          <motion.div 
-            variants={riseUpVariant}
-            className="mt-10 w-[320px] h-[190px] bg-white/70 backdrop-blur-md rounded-2xl p-2 shadow-xl relative overflow-hidden"
-          >
-            <div className="w-full h-full bg-gray-900 rounded-xl flex items-center justify-center relative overflow-hidden">
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/uR4dbOCN2s4?autoplay=1&mute=1&start=21&rel=0&modestbranding=1"
-                title="T5E Signature Collection"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="rounded-xl w-full h-full object-cover"
-              ></iframe>
-            </div>
+          <motion.div variants={rise}>
+            <Actions />
           </motion.div>
-
-        </motion.div>
-      </div>
-
-      {/* =========================================================
-          MOBILE VIEW (SaaS / App Style Layout - Hidden on Desktop)
-         ========================================================= */}
-      <motion.div 
-        className="relative z-20 md:hidden flex flex-col justify-center min-h-[85vh] py-6"
-        variants={containerVariant}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.1 }}
-      >
-        {/* SaaS Glowing Pill Badge */}
-        <motion.div variants={riseUpVariant} className="self-start mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1C2B1E]/10 border border-[#1C2B1E]/20 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-[#c9a84c] animate-pulse"></span>
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#1C2B1E]">
-              The 5 Elements · Pune
-            </span>
-          </div>
-        </motion.div>
-
-        {/* High-Impact Vertical SaaS Headline */}
-        <motion.h1 
-          variants={riseUpVariant}
-          className="text-5xl sm:text-6xl font-extrabold text-[#1C2B1E] leading-[1.05] tracking-tight mb-4"
-          style={{ fontFamily: "var(--font-playfair)" }}
-        >
-          Redefining <br/>
-          <span className="italic font-light bg-gradient-to-r from-[#a8852f] via-[#c9a84c] to-[#e2c97e] bg-clip-text text-transparent">
-            Modern Living.
-          </span>
-        </motion.h1>
-
-        {/* Concise Pitch */}
-        <motion.p 
-          variants={riseUpVariant}
-          className="text-sm text-[#1C2B1E]/80 leading-relaxed font-normal mb-8 max-w-sm"
-        >
-          Architectural brilliance crafted in harmony with nature. Experience sustainable luxury residences designed for generations.
-        </motion.p>
-
-        {/* Floating SaaS "App Card" Video Player */}
-        <motion.div 
-          variants={riseUpVariant}
-          className="w-full bg-white/80 backdrop-blur-xl border border-white rounded-3xl p-3 shadow-[0_20px_50px_rgba(28,43,30,0.15)] relative overflow-hidden"
-        >
-          {/* Subtle App Window Header Bar */}
-          <div className="flex items-center justify-between pb-2.5 px-2">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#1C2B1E]/20"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-[#1C2B1E]/20"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-[#c9a84c]"></span>
-            </div>
-            <span className="text-[9px] tracking-widest font-bold uppercase text-[#1C2B1E]/60">
-              Showcase Reel
-            </span>
-            <span className="text-xs text-[#c9a84c]">✦</span>
-          </div>
-
-          {/* 16:9 Video Embed Wrapper */}
-          <div className="w-full aspect-video bg-gray-950 rounded-2xl overflow-hidden relative shadow-inner">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/uR4dbOCN2s4?autoplay=1&mute=1&start=21&rel=0&modestbranding=1"
-              title="T5E Signature Collection"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="w-full h-full object-cover"
-            ></iframe>
-          </div>
-
-          {/* Bottom Card Footer Overlay */}
-          <div className="pt-3 px-2 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#1C2B1E]">
-                Signature Collection
-              </p>
-              <p className="text-[9px] text-[#1C2B1E]/60">
-                Tap fullscreen to immerse
-              </p>
-            </div>
-            <div className="px-3 py-1 rounded-full bg-[#1C2B1E] text-white text-[9px] font-bold tracking-widest uppercase shadow-sm">
-              T5E
-            </div>
-          </div>
-        </motion.div>
-
+        </div>
       </motion.div>
-
-    </main>
+    </section>
   );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  ScrubHero                                                                  */
+/*  Mounted only when scrubbing is actually on, so useScroll's target ref is   */
+/*  guaranteed to be attached to a live DOM node on first effect. Calling      */
+/*  useScroll in a component that might return early is what produces the      */
+/*  "Target ref is defined but not hydrated" error.                            */
+/* -------------------------------------------------------------------------- */
+
+function ScrubHero({ headlineId }: { headlineId: string }) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const durationRef = useRef(0);
+
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [videoReady, setVideoReady] = useState(false);
+
+  useStickyGuard(wrapperRef);
+
+  const { scrollYProgress } = useScroll({
+    target: wrapperRef,
+    offset: ['start start', 'end end'],
+  });
+
+  // The spring IS the smoothing. Video playhead and text both read from it,
+  // so they can never drift apart.
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 80,
+    damping: 26,
+    mass: 0.4,
+    restDelta: 0.0005,
+  });
+
+  /* ---- fetch the clip into memory so seeking is instant ------------------ */
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    let alive = true;
+
+    fetch('/hero.mp4')
+      .then((r) => r.blob())
+      .then((blob) => {
+        if (!alive) return;
+        objectUrl = URL.createObjectURL(blob);
+        setVideoSrc(objectUrl);
+      })
+      .catch(() => {
+        // Network-streamed fallback — seeking is choppier but it still works.
+        if (alive) setVideoSrc('/hero.mp4');
+      });
+
+    return () => {
+      alive = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, []);
+
+  /* ---- one rAF loop, one writer to currentTime --------------------------- */
+
+  useEffect(() => {
+    if (!videoReady) return;
+    let raf = 0;
+    let lastWritten = -1;
+
+    const tick = () => {
+      const video = videoRef.current;
+      const duration = durationRef.current;
+
+      if (video && duration > 0 && video.readyState >= 2) {
+        const p = Math.min(Math.max(progress.get(), 0), 1);
+        // Stop a hair short of the end — seeking to exact duration can hold a
+        // black frame on some decoders.
+        const time = p * (duration - 0.05);
+
+        // Only write when the change is worth a repaint (~1 frame at 60fps).
+        if (Math.abs(time - lastWritten) > 0.016) {
+          lastWritten = time;
+          if (typeof video.fastSeek === 'function') {
+            video.fastSeek(time);
+          } else {
+            video.currentTime = time;
+          }
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [videoReady, progress]);
+
+  /* ---- prime the decoder ------------------------------------------------- */
+
+  useEffect(() => {
+    if (!videoSrc) return;
+    const prime = async () => {
+      const video = videoRef.current;
+      if (!video) return;
+      try {
+        await video.play();
+        video.pause();
+        video.currentTime = 0;
+      } catch {
+        /* autoplay refused — the pointer handler below covers it */
+      }
+    };
+    prime();
+    window.addEventListener('pointerdown', prime, { once: true });
+    return () => window.removeEventListener('pointerdown', prime);
+  }, [videoSrc]);
+
+  /* ---- derived motion ---------------------------------------------------- */
+
+  const mediaScale = useTransform(progress, [0, 1], [1.06, 1]);
+  const cueOpacity = useTransform(progress, [0, 0.08], [1, 0]);
+  const railScale = useTransform(progress, [0, 1], [0.04, 1]);
+
+  return (
+    // No overflow-hidden on this wrapper or its ancestors — position: sticky
+    // fails silently if a scroll ancestor clips.
+    <div ref={wrapperRef} className="t5e-wrapper">
+      <section className="t5e-stage" aria-labelledby={headlineId}>
+        <motion.div style={{ scale: mediaScale }} className="t5e-media">
+          <Image
+            src="/img/hero-poster.jpg"
+            alt="T5E — The 5 Elements, a residential development in Wagholi, Pune, at dusk"
+            fill
+            priority
+            sizes="100vw"
+            className="t5e-media__img"
+          />
+          {videoSrc && (
+            <video
+              ref={videoRef}
+              src={videoSrc}
+              muted
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              aria-hidden="true"
+              onLoadedMetadata={() => {
+                const v = videoRef.current;
+                if (!v) return;
+                durationRef.current = v.duration || 4;
+                setVideoReady(true);
+              }}
+              className={`t5e-media__video ${videoReady ? 'is-ready' : ''}`}
+            />
+          )}
+          <div className="t5e-scrim" aria-hidden="true" />
+        </motion.div>
+
+        <header className="t5e-brandbar">
+          <span className="t5e-mark">T5E</span>
+          <span className="t5e-brandbar__rule" aria-hidden="true" />
+          <span className="t5e-brandbar__name">The 5 Elements</span>
+          <span className="t5e-brandbar__place">Wagholi, Pune</span>
+        </header>
+
+        <div className="t5e-chapters">
+          <Chapter progress={progress} range={[0, 0.03, 0.32, 0.44]}>
+            <Pills />
+            <h1 id={headlineId} className="t5e-display">
+              Redefining
+              <span className="t5e-display__accent">Living</span>
+            </h1>
+            <p className="t5e-body">
+              Welcome to The 5 Elements. We develop visionary spaces where
+              luxury meets sustainability, crafting environments designed in
+              perfect harmony with nature to elevate your everyday life.
+            </p>
+          </Chapter>
+
+          <Chapter progress={progress} range={[0.56, 0.68, 0.98, 1]} align="right">
+            <span className="t5e-eyebrow">Above the seventh floor</span>
+            <h2 className="t5e-display t5e-display--sm">
+              A skyline
+              <span className="t5e-display__accent">of your own</span>
+            </h2>
+            <p className="t5e-body">
+              An open-air deck, a pool held against the horizon, and residences
+              finished to last a generation.
+            </p>
+            <Actions />
+          </Chapter>
+        </div>
+
+        <div className="t5e-rail" aria-hidden="true">
+          <motion.span style={{ scaleY: railScale }} className="t5e-rail__fill" />
+        </div>
+
+        <motion.div style={{ opacity: cueOpacity }} className="t5e-cue" aria-hidden="true">
+          <span>Scroll</span>
+          <span className="t5e-cue__track">
+            <span className="t5e-cue__tick" />
+          </span>
+        </motion.div>
+      </section>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Hero — decides which of the two to mount. No scroll hooks live here.       */
+/* -------------------------------------------------------------------------- */
+
+export default function Hero() {
+  const [mounted, setMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+  const headlineId = useId();
+
+  useEffect(() => {
+    setMounted(true);
+    const mql = window.matchMedia('(min-width: 768px)');
+    const update = () => setIsDesktop(mql.matches);
+    update();
+    mql.addEventListener('change', update);
+    return () => mql.removeEventListener('change', update);
+  }, []);
+
+  if (!mounted || !isDesktop || prefersReducedMotion) {
+    return (
+      <MobileHero
+        headlineId={headlineId}
+        allowVideo={mounted && !prefersReducedMotion}
+      />
+    );
+  }
+
+  return <ScrubHero headlineId={headlineId} />;
 }

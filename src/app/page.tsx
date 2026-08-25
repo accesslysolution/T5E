@@ -4,7 +4,7 @@ import Philosophy from "@/components/Philosophy";
 import Projects from "@/components/Projects";
 import Legacy from "@/components/Legacy";
 import Contact from "@/components/Contact";
-import VideoShowcase from "@/components/video";
+import VideoShowcase from "@/components/Videoshowcase";
 
 export default function Home() {
   return (

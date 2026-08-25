@@ -1,0 +1,541 @@
+/* ==========================================================================
+   T5E — Hero
+   Plain CSS (no @layer / no Tailwind directives) so it can be imported
+   directly from the component in the App Router without a @reference.
+   ========================================================================== */
+
+:root {
+  --t5e-green: #1c2b1e;
+  --t5e-gold: #c9a84c;
+  --t5e-cream: #f4f4f2;
+  --t5e-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Scroll frame
+   The wrapper is tall; the stage sticks inside it. Nothing in the ancestor
+   chain may set overflow to hidden / clip / auto or sticky will fail.
+   -------------------------------------------------------------------------- */
+
+.t5e-wrapper {
+  position: relative;
+  height: 320vh;
+  background: var(--t5e-green);
+  /* Never clip here — it would make this element the sticky container
+     and pin the stage to the wrapper instead of the viewport. */
+  overflow: visible;
+}
+
+.t5e-stage {
+  position: sticky;
+  position: -webkit-sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  overflow: hidden; /* safe: clipping the sticky element itself is fine */
+  background: var(--t5e-green);
+}
+
+/* Escape hatch — add `t5e-unclip` to any ancestor that must keep
+   overflow-x contained without breaking sticky. */
+.t5e-unclip {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/* --------------------------------------------------------------------------
+   Media
+   -------------------------------------------------------------------------- */
+
+.t5e-media {
+  position: absolute;
+  inset: 0;
+  transform-origin: 60% 45%;
+  will-change: transform;
+}
+
+.t5e-media__img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.t5e-media__video {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 500ms var(--t5e-ease);
+}
+
+.t5e-media__video.is-ready {
+  opacity: 1;
+}
+
+/* Soft directional scrim — keeps the glass panels legible without flattening
+   the whole frame the way a full-bleed overlay does. */
+.t5e-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(14, 22, 15, 0.9) 0%,
+      rgba(14, 22, 15, 0.58) 40%,
+      rgba(14, 22, 15, 0.12) 72%,
+      rgba(14, 22, 15, 0) 100%
+    ),
+    linear-gradient(
+      to top,
+      rgba(14, 22, 15, 0.65) 0%,
+      rgba(14, 22, 15, 0) 40%
+    );
+}
+
+/* --------------------------------------------------------------------------
+   Brand bar
+   -------------------------------------------------------------------------- */
+
+.t5e-brandbar {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 2rem 3rem;
+  color: var(--t5e-cream);
+}
+
+.t5e-mark {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+  color: var(--t5e-gold);
+}
+
+.t5e-brandbar__rule {
+  height: 0.75rem;
+  width: 1px;
+  background: rgba(244, 244, 242, 0.28);
+}
+
+.t5e-brandbar__name,
+.t5e-brandbar__place {
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(244, 244, 242, 0.7);
+}
+
+.t5e-brandbar__place {
+  margin-inline-start: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Chapters
+   -------------------------------------------------------------------------- */
+
+.t5e-chapters {
+  position: relative;
+  z-index: 20;
+  height: 100%;
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding-inline: 3rem;
+}
+
+.t5e-chapter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-inline: 3rem;
+  will-change: transform, opacity;
+}
+
+.t5e-chapter--right {
+  align-items: flex-end;
+  text-align: left;
+}
+
+/* --------------------------------------------------------------------------
+   Glass
+   backdrop-filter is expensive. It is set once and never animated — animating
+   filter on a backdrop-filtered element forces a full re-rasterisation every
+   frame and is the single fastest way to make a scrub feel like mud.
+   -------------------------------------------------------------------------- */
+
+.t5e-glass {
+  position: relative;
+  width: 100%;
+  max-width: 34rem;
+  padding: 2.75rem;
+  border-radius: 1.25rem;
+  /* Dark tint, not light. A light tint over a bright dusk frame raises the
+     backdrop luminance and cream text disappears into it. */
+  background: rgba(18, 28, 20, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(24px) saturate(115%) brightness(0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(115%) brightness(0.82);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 28px 70px -20px rgba(0, 0, 0, 0.75);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .t5e-glass {
+    background: rgba(18, 28, 20, 0.9);
+  }
+}
+
+/* Local pool of shadow under the panel so it never floats on a hotspot. */
+.t5e-chapter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 55% at 28% 50%,
+    rgba(12, 20, 14, 0.72) 0%,
+    rgba(12, 20, 14, 0.34) 55%,
+    rgba(12, 20, 14, 0) 100%
+  );
+}
+
+.t5e-chapter--right::before {
+  background: radial-gradient(
+    60% 55% at 72% 50%,
+    rgba(12, 20, 14, 0.72) 0%,
+    rgba(12, 20, 14, 0.34) 55%,
+    rgba(12, 20, 14, 0) 100%
+  );
+}
+
+.t5e-glass::before {
+  content: '';
+  position: absolute;
+  top: 12%;
+  bottom: 12%;
+  left: -1px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    rgba(201, 168, 76, 0) 0%,
+    rgba(201, 168, 76, 0.95) 50%,
+    rgba(201, 168, 76, 0) 100%
+  );
+}
+
+/* --------------------------------------------------------------------------
+   Type
+   -------------------------------------------------------------------------- */
+
+.t5e-display {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(2.75rem, 5vw, 4.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 24px rgba(8, 14, 9, 0.55);
+}
+
+.t5e-display--sm {
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+}
+
+.t5e-display__accent {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  /* Lifted a step from #c9a84c — the base gold is too close in value to a
+     dusk backdrop to hold an edge at display size. */
+  color: #e0c274;
+}
+
+.t5e-eyebrow {
+  display: inline-block;
+  margin-bottom: 0.875rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #e0c274;
+}
+
+.t5e-body {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.94);
+  max-width: 34ch;
+  text-shadow: 0 1px 12px rgba(8, 14, 9, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   Pills
+   -------------------------------------------------------------------------- */
+
+.t5e-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.t5e-pill {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(12, 20, 14, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.t5e-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.t5e-btn {
+  padding: 0.9rem 1.6rem;
+  border-radius: 2px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 300ms var(--t5e-ease),
+    border-color 300ms var(--t5e-ease),
+    transform 300ms var(--t5e-ease),
+    box-shadow 300ms var(--t5e-ease);
+}
+
+.t5e-btn:focus-visible {
+  outline: 2px solid var(--t5e-gold);
+  outline-offset: 3px;
+}
+
+.t5e-btn--primary {
+  background: var(--t5e-gold);
+  color: var(--t5e-green);
+  border: 1px solid var(--t5e-gold);
+  box-shadow: 0 4px 24px rgba(201, 168, 76, 0.22);
+}
+
+.t5e-btn--primary:hover {
+  background: #d6b862;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(201, 168, 76, 0.38);
+}
+
+.t5e-btn--ghost {
+  background: rgba(244, 244, 242, 0.06);
+  border: 1px solid rgba(244, 244, 242, 0.32);
+  color: var(--t5e-cream);
+}
+
+.t5e-btn--ghost:hover {
+  background: rgba(244, 244, 242, 0.13);
+  border-color: rgba(244, 244, 242, 0.6);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   Rail + scroll cue
+   -------------------------------------------------------------------------- */
+
+.t5e-rail {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 1px;
+  height: 7rem;
+  background: rgba(244, 244, 242, 0.18);
+}
+
+.t5e-rail__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: top;
+  background: var(--t5e-gold);
+}
+
+.t5e-cue {
+  position: absolute;
+  bottom: 2.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(244, 244, 242, 0.6);
+}
+
+.t5e-cue__track {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 1.75rem;
+  background: rgba(244, 244, 242, 0.18);
+  overflow: hidden;
+}
+
+.t5e-cue__tick {
+  position: absolute;
+  inset-inline: 0;
+  height: 50%;
+  background: var(--t5e-gold);
+  animation: t5e-drop 1.9s var(--t5e-ease) infinite;
+}
+
+@keyframes t5e-drop {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  80%,
+  100% {
+    transform: translateY(200%);
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile hero
+   -------------------------------------------------------------------------- */
+
+.t5e-mobile {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--t5e-green);
+  overflow: hidden;
+}
+
+.t5e-mobile__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Bottom-weighted on mobile — the panel sits low, so the darkness needs to
+   pool there rather than on the left as it does on desktop. */
+.t5e-scrim--mobile {
+  background:
+    linear-gradient(
+      to top,
+      rgba(14, 22, 15, 0.94) 0%,
+      rgba(14, 22, 15, 0.72) 32%,
+      rgba(14, 22, 15, 0.18) 62%,
+      rgba(14, 22, 15, 0.05) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(14, 22, 15, 0.55) 0%,
+      rgba(14, 22, 15, 0) 26%
+    );
+}
+
+.t5e-mobile__body {
+  position: relative;
+  z-index: 20;
+  margin-top: auto;
+  padding: 1rem 1rem calc(1.75rem + env(safe-area-inset-bottom));
+}
+
+.t5e-mobile .t5e-brandbar {
+  padding: calc(1.25rem + env(safe-area-inset-top)) 1.25rem 1.25rem;
+}
+
+.t5e-mobile .t5e-glass {
+  max-width: none;
+  padding: 1.75rem 1.5rem;
+  border-radius: 1.5rem;
+  /* Slightly denser than desktop: small screens put the text much closer to
+     the brightest part of the frame. */
+  background: rgba(16, 25, 18, 0.62);
+}
+
+.t5e-mobile .t5e-body {
+  max-width: none;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 767px) {
+  .t5e-display {
+    font-size: clamp(2.5rem, 12vw, 3.25rem);
+  }
+
+  .t5e-pills {
+    margin-bottom: 1.25rem;
+  }
+
+  .t5e-pill {
+    font-size: 0.5625rem;
+    padding: 0.35rem 0.75rem;
+    letter-spacing: 0.14em;
+  }
+
+  .t5e-actions {
+    flex-direction: column;
+    margin-top: 1.5rem;
+  }
+
+  .t5e-btn {
+    width: 100%;
+    text-align: center;
+    padding-block: 1rem;
+  }
+
+  .t5e-brandbar__place {
+    font-size: 0.625rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t5e-cue__tick {
+    animation: none;
+  }
+
+  .t5e-btn {
+    transition: none;
+  }
+
+  .t5e-media__video {
+    transition: none;
+  }
+}
