@@ -16,8 +16,8 @@ export default function Home() {
      */
     <div className="flex flex-col w-full overflow-x-hidden">
       <Hero />
-      <VideoShowcase />
       <StatsBand />
+      <VideoShowcase />
       <Projects />
       <Philosophy />
       <Legacy />

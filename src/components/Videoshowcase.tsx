@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, useScroll, useTransform, useReducedMotion, type Variants } from 'framer-motion';
 import './Videoshowcase.css';
 
@@ -36,8 +37,11 @@ export default function VideoShowcase() {
   const sectionRef = useRef<HTMLElement>(null);
   const [ambient, setAmbient] = useState(false);
   const [cinema, setCinema] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => setMounted(true), []);
 
   /* ---- gentle parallax on the backdrop ---------------------------------- */
 
@@ -85,14 +89,27 @@ export default function VideoShowcase() {
 
   useEffect(() => {
     if (!cinema) return;
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeCinema();
     };
     window.addEventListener('keydown', onKey);
+
+    // Compensate for the disappearing scrollbar, or a fixed navbar visibly
+    // jumps sideways the moment the overlay opens.
+    const gap = window.innerWidth - document.documentElement.clientWidth;
+    const prevOverflow = document.body.style.overflow;
+    const prevPadding = document.body.style.paddingRight;
+
     document.body.style.overflow = 'hidden';
+    if (gap > 0) document.body.style.paddingRight = `${gap}px`;
+    document.body.classList.add('vs-cinema-open');
+
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPadding;
+      document.body.classList.remove('vs-cinema-open');
     };
   }, [cinema, closeCinema]);
 
@@ -162,10 +179,6 @@ export default function VideoShowcase() {
             <span className="vs__play-icon" aria-hidden="true" />
             <span className="vs__play-label">Watch the film</span>
           </button>
-
-          <a href="#gallery" className="vs__link">
-            View full gallery
-          </a>
         </motion.div>
       </motion.div>
 
@@ -174,30 +187,45 @@ export default function VideoShowcase() {
       <span className="vs__mark vs__mark--tl" aria-hidden="true" />
       <span className="vs__mark vs__mark--br" aria-hidden="true" />
 
-      {/* ---- cinema mode ---------------------------------------------------- */}
+      {/* ---- cinema mode ----------------------------------------------------
+          Portalled to <body>. The section sets `isolation: isolate`, which
+          creates a stacking context — any overlay rendered inside it is
+          trapped beneath a fixed navbar regardless of its z-index. */}
 
-      {cinema && (
-        <div className="vs__cinema" role="dialog" aria-modal="true" aria-label="T5E Signature Collection film">
-          <button
-            type="button"
-            onClick={closeCinema}
-            className="vs__close"
-            aria-label="Close video"
+      {cinema &&
+        mounted &&
+        createPortal(
+          <div
+            className="vs__cinema"
+            role="dialog"
+            aria-modal="true"
+            aria-label="T5E Signature Collection film"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) closeCinema();
+            }}
           >
-            <span aria-hidden="true">×</span>
-          </button>
+            <button
+              type="button"
+              onClick={closeCinema}
+              className="vs__close"
+              aria-label="Close video"
+              autoFocus
+            >
+              <span aria-hidden="true">×</span>
+            </button>
 
-          <div className="vs__cinema-frame">
-            <iframe
-              src={CINEMA_SRC}
-              title="T5E Signature Collection"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              frameBorder="0"
-            />
-          </div>
-        </div>
-      )}
+            <div className="vs__cinema-frame">
+              <iframe
+                src={CINEMA_SRC}
+                title="T5E Signature Collection"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                frameBorder="0"
+              />
+            </div>
+          </div>,
+          document.body
+        )}
     </section>
   );
 }

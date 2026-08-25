@@ -172,7 +172,10 @@ function MobileHero({
     if (conn?.saveData) return;
     if (conn?.effectiveType && /2g|slow-2g|3g/.test(conn.effectiveType)) return;
 
-    const load = () => setSrc('/hero-mobile.mp4');
+    // Looping playback never seeks, so the every-frame-keyframe encode buys
+    // nothing here — swap in a smaller mobile cut if the file size bites.
+    const load = () => setSrc('/hero.mp4');
+
     const ric = (window as Window & { requestIdleCallback?: (cb: () => void) => number })
       .requestIdleCallback;
 

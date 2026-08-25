@@ -281,23 +281,6 @@
   transform: scaleX(1);
 }
 
-.vs__link {
-  font-family: var(--font-jakarta);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding-bottom: 0.35rem;
-  transition: color 400ms ease, border-color 400ms ease;
-}
-
-.vs__link:hover {
-  color: #e0c274;
-  border-color: #c9a84c;
-}
-
 /* --------------------------------------------------------------------------
    Corner marks
    -------------------------------------------------------------------------- */
@@ -332,7 +315,9 @@
 .vs__cinema {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  /* Above any fixed navbar. The portal takes it out of the section's
+     stacking context; this keeps it above everything else on the page. */
+  z-index: 2147483000;
   display: grid;
   place-items: center;
   padding: clamp(1rem, 5vw, 4rem);
@@ -341,6 +326,16 @@
   -webkit-backdrop-filter: blur(12px);
   animation: vs-fade-in 400ms ease forwards;
   opacity: 0;
+}
+
+/* Optional: if your navbar is fixed and you'd rather it fade out than sit
+   behind the overlay, give it a `site-nav` class (or change the selector) and
+   this will hide it while the film is open. */
+body.vs-cinema-open .site-nav,
+body.vs-cinema-open header[data-fixed-nav] {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
 }
 
 .vs__cinema-frame {
@@ -448,7 +443,6 @@
   .vs__play,
   .vs__play-ring,
   .vs__play-icon,
-  .vs__link,
   .vs__close {
     transition: none;
   }
