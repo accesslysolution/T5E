@@ -55,23 +55,18 @@
   will-change: transform;
 }
 
-.t5e-media__img {
-  object-fit: cover;
-  object-position: center;
-}
-
+/* The video element is always present now, and its own `poster` attribute
+   holds the frame before playback — so there is no separate image layer to
+   fade between. `is-ready` is kept as a hook for anything you want to trigger
+   once the clip can actually play. */
 .t5e-media__video {
   position: absolute;
   inset: 0;
   height: 100%;
   width: 100%;
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 500ms var(--t5e-ease);
-}
-
-.t5e-media__video.is-ready {
-  opacity: 1;
+  object-position: center;
+  background-color: var(--t5e-green);
 }
 
 /* Soft directional scrim — keeps the glass panels legible without flattening
@@ -535,7 +530,4 @@
     transition: none;
   }
 
-  .t5e-media__video {
-    transition: none;
-  }
 }

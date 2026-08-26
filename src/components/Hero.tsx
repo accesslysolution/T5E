@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useId } from 'react';
-import Image from 'next/image';
 import {
   motion,
   useScroll,
@@ -196,28 +195,22 @@ function MobileHero({
   return (
     <section className="t5e-mobile" aria-labelledby={headlineId}>
       <div className="t5e-mobile__media">
-        <Image
-          src="/img/hero-poster.jpg"
-          alt="T5E — The 5 Elements, a residential development in Wagholi, Pune, at dusk"
-          fill
-          priority
-          sizes="100vw"
-          className="t5e-media__img"
+        {/* The poster attribute carries the frame before playback and stays put
+            entirely when the video never loads (save-data, 2G/3G, reduced
+            motion). It is also what the browser paints for LCP. */}
+        <video
+          src={src ?? undefined}
+          poster="/img/hero-poster.jpg"
+          muted
+          loop
+          autoPlay
+          playsInline
+          preload="none"
+          disablePictureInPicture
+          aria-label="T5E — The 5 Elements, a residential development in Wagholi, Pune, at dusk"
+          onCanPlay={() => setReady(true)}
+          className={`t5e-media__video is-visible ${ready ? 'is-ready' : ''}`}
         />
-        {src && (
-          <video
-            src={src}
-            muted
-            loop
-            autoPlay
-            playsInline
-            preload="none"
-            disablePictureInPicture
-            aria-hidden="true"
-            onCanPlay={() => setReady(true)}
-            className={`t5e-media__video ${ready ? 'is-ready' : ''}`}
-          />
-        )}
         <div className="t5e-scrim t5e-scrim--mobile" aria-hidden="true" />
       </div>
 
@@ -378,32 +371,25 @@ function ScrubHero({ headlineId }: { headlineId: string }) {
     <div ref={wrapperRef} className="t5e-wrapper">
       <section className="t5e-stage" aria-labelledby={headlineId}>
         <motion.div style={{ scale: mediaScale }} className="t5e-media">
-          <Image
-            src="/img/hero-poster.jpg"
-            alt="T5E — The 5 Elements, a residential development in Wagholi, Pune, at dusk"
-            fill
-            priority
-            sizes="100vw"
-            className="t5e-media__img"
+          {/* Poster holds the frame until the clip has been fetched into
+              memory, so there is no flash of empty background. */}
+          <video
+            ref={videoRef}
+            src={videoSrc ?? undefined}
+            poster="/img/hero-poster.jpg"
+            muted
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+            aria-label="T5E — The 5 Elements, a residential development in Wagholi, Pune, at dusk"
+            onLoadedMetadata={() => {
+              const v = videoRef.current;
+              if (!v) return;
+              durationRef.current = v.duration || 4;
+              setVideoReady(true);
+            }}
+            className={`t5e-media__video is-visible ${videoReady ? 'is-ready' : ''}`}
           />
-          {videoSrc && (
-            <video
-              ref={videoRef}
-              src={videoSrc}
-              muted
-              playsInline
-              preload="auto"
-              disablePictureInPicture
-              aria-hidden="true"
-              onLoadedMetadata={() => {
-                const v = videoRef.current;
-                if (!v) return;
-                durationRef.current = v.duration || 4;
-                setVideoReady(true);
-              }}
-              className={`t5e-media__video ${videoReady ? 'is-ready' : ''}`}
-            />
-          )}
           <div className="t5e-scrim" aria-hidden="true" />
         </motion.div>
 
