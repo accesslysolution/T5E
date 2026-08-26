@@ -9,7 +9,6 @@ import {
   AnimatePresence,
   useScroll,
   useSpring,
-  useMotionValueEvent,
   useReducedMotion,
 } from "framer-motion";
 
@@ -99,7 +98,6 @@ function useActiveSection(enabled: boolean) {
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -110,17 +108,11 @@ export default function Navbar() {
   /* Where we were headed when we left another page. */
   const pendingHash = useRef<string | null>(null);
 
-  const { scrollYProgress, scrollY } = useScroll();
+  const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001,
-  });
-
-  /* ---- solid bar only once you've left the top ---------------------------- */
-
-  useMotionValueEvent(scrollY, "change", (v) => {
-    setScrolled(v > 24);
   });
 
   /* ---- which link is current --------------------------------------------- */
@@ -266,11 +258,7 @@ export default function Navbar() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: EASE }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-500 ${
-          scrolled || menuOpen
-            ? "bg-[#1C2B1E]/95 backdrop-blur-xl shadow-lg border-b border-white/5"
-            : "bg-gradient-to-b from-[#0e160f]/70 to-transparent border-b border-transparent"
-        }`}
+        className="fixed top-0 left-0 right-0 z-50 bg-[#1C2B1E]/95 backdrop-blur-xl shadow-lg border-b border-white/5"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between h-20">
           {/* Logo */}
