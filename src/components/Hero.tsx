@@ -70,13 +70,22 @@ function useStickyGuard(ref: React.RefObject<HTMLElement | null>) {
 
 interface ChapterProps {
   progress: MotionValue<number>;
-  /** Strictly increasing: [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd] */
+  /** Strictly increasing: [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd].
+      Start below zero to have a chapter already visible on the first frame. */
   range: [number, number, number, number];
-  align?: 'left' | 'right';
+  align?: 'left' | 'right' | 'center';
+  /** 'bare' drops the glass panel — for the centred title card. */
+  variant?: 'glass' | 'bare';
   children: React.ReactNode;
 }
 
-function Chapter({ progress, range, align = 'left', children }: ChapterProps) {
+function Chapter({
+  progress,
+  range,
+  align = 'left',
+  variant = 'glass',
+  children,
+}: ChapterProps) {
   const opacity = useTransform(progress, range, [0, 1, 1, 0]);
   const y = useTransform(progress, range, [40, 0, 0, -40]);
   const scale = useTransform(progress, range, [0.97, 1, 1, 1.015]);
@@ -84,12 +93,23 @@ function Chapter({ progress, range, align = 'left', children }: ChapterProps) {
     v > range[1] - 0.02 && v < range[2] + 0.02 ? 'auto' : 'none'
   );
 
+  const alignClass =
+    align === 'right'
+      ? 't5e-chapter--right'
+      : align === 'center'
+        ? 't5e-chapter--center'
+        : '';
+
   return (
     <motion.div
       style={{ opacity, y, scale, pointerEvents }}
-      className={`t5e-chapter ${align === 'right' ? 't5e-chapter--right' : ''}`}
+      className={`t5e-chapter ${alignClass}`}
     >
-      <div className="t5e-glass">{children}</div>
+      {variant === 'bare' ? (
+        <div className="t5e-intro">{children}</div>
+      ) : (
+        <div className="t5e-glass">{children}</div>
+      )}
     </motion.div>
   );
 }
@@ -362,7 +382,7 @@ function ScrubHero({ headlineId }: { headlineId: string }) {
   /* ---- derived motion ---------------------------------------------------- */
 
   const mediaScale = useTransform(progress, [0, 1], [1.06, 1]);
-  const cueOpacity = useTransform(progress, [0, 0.08], [1, 0]);
+  const cueOpacity = useTransform(progress, [0, 0.12], [1, 0]);
   const railScale = useTransform(progress, [0, 1], [0.04, 1]);
 
   return (
@@ -401,7 +421,25 @@ function ScrubHero({ headlineId }: { headlineId: string }) {
         </header>
 
         <div className="t5e-chapters">
-          <Chapter progress={progress} range={[0, 0.03, 0.32, 0.44]}>
+          {/* Opening title card. The range starts below zero so it is already
+              at full opacity on the very first frame — a chapter whose fade-in
+              begins at exactly 0 renders invisible until you scroll. */}
+          <Chapter
+            progress={progress}
+            range={[-0.02, 0, 0.13, 0.22]}
+            align="center"
+            variant="bare"
+          >
+            <span className="t5e-intro__eyebrow">Wagholi, Pune</span>
+            <p className="t5e-intro__title">
+              The Five
+              <span className="t5e-intro__title-accent">Elements</span>
+            </p>
+            <span className="t5e-intro__rule" aria-hidden="true" />
+            <span className="t5e-intro__sub">Seven floors above the everyday</span>
+          </Chapter>
+
+          <Chapter progress={progress} range={[0.26, 0.36, 0.52, 0.62]}>
             <Pills />
             <h1 id={headlineId} className="t5e-display">
               Redefining
@@ -414,7 +452,7 @@ function ScrubHero({ headlineId }: { headlineId: string }) {
             </p>
           </Chapter>
 
-          <Chapter progress={progress} range={[0.56, 0.68, 0.98, 1]} align="right">
+          <Chapter progress={progress} range={[0.68, 0.78, 0.98, 1]} align="right">
             <span className="t5e-eyebrow">Above the seventh floor</span>
             <h2 className="t5e-display t5e-display--sm">
               A skyline

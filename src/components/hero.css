@@ -19,7 +19,7 @@
 
 .t5e-wrapper {
   position: relative;
-  height: 320vh;
+  height: 400vh;
   background: var(--t5e-green);
   /* Never clip here — it would make this element the sticky container
      and pin the stage to the wrapper instead of the viewport. */
@@ -158,6 +158,82 @@
 .t5e-chapter--right {
   align-items: flex-end;
   text-align: left;
+}
+
+.t5e-chapter--center {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Intro title card
+   No glass panel — just type on the frame, held up by a soft central scrim.
+   -------------------------------------------------------------------------- */
+
+.t5e-chapter--center::before {
+  background: radial-gradient(
+    55% 45% at 50% 50%,
+    rgba(12, 20, 14, 0.7) 0%,
+    rgba(12, 20, 14, 0.34) 55%,
+    rgba(12, 20, 14, 0) 100%
+  );
+}
+
+.t5e-intro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 46rem;
+}
+
+.t5e-intro__eyebrow {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: #e0c274;
+  margin-bottom: 1.75rem;
+  text-shadow: 0 1px 16px rgba(8, 14, 9, 0.7);
+}
+
+.t5e-intro__title {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  font-weight: 300;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  text-shadow: 0 4px 48px rgba(8, 14, 9, 0.7);
+}
+
+.t5e-intro__title-accent {
+  display: block;
+  font-style: italic;
+  color: #e0c274;
+}
+
+.t5e-intro__rule {
+  display: block;
+  width: 4rem;
+  height: 1px;
+  margin: 2rem 0 1.5rem;
+  background: linear-gradient(
+    to right,
+    rgba(201, 168, 76, 0),
+    #c9a84c,
+    rgba(201, 168, 76, 0)
+  );
+}
+
+.t5e-intro__sub {
+  font-size: 0.75rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 1px 16px rgba(8, 14, 9, 0.7);
 }
 
 /* --------------------------------------------------------------------------
@@ -493,6 +569,19 @@
 @media (max-width: 767px) {
   .t5e-display {
     font-size: clamp(2.5rem, 12vw, 3.25rem);
+  }
+
+  .t5e-intro__title {
+    font-size: clamp(3rem, 15vw, 4rem);
+  }
+
+  .t5e-intro__eyebrow {
+    letter-spacing: 0.3em;
+  }
+
+  .t5e-intro__sub {
+    font-size: 0.625rem;
+    letter-spacing: 0.22em;
   }
 
   .t5e-pills {
