@@ -165,8 +165,11 @@ function ProjectCard({
         rotateY: isActive ? tiltY : rotateYTarget,
         transformStyle: "preserve-3d",
       }}
-      className={`absolute top-0 left-1/2 -translate-x-1/2 w-[85vw] max-w-[370px] lg:max-w-[410px] h-[580px] rounded-2xl bg-white/85 backdrop-blur-xl border border-white/70 shadow-[0_15px_40px_rgba(28,43,30,0.08)] transition-shadow duration-500 flex flex-col justify-between overflow-hidden ${
-        isActive ? "cursor-pointer hover:shadow-[0_25px_65px_rgba(28,43,30,0.22)]" : "cursor-pointer pointer-events-auto"
+      // Added `filter` to the transitions and applied `grayscale` to inactive states
+      className={`absolute top-0 left-1/2 -translate-x-1/2 w-[85vw] max-w-[370px] lg:max-w-[410px] h-[580px] rounded-2xl bg-white/85 backdrop-blur-xl transition-[box-shadow,border-color,filter] duration-500 flex flex-col justify-between overflow-hidden ${
+        isActive 
+          ? "cursor-pointer border-[2px] border-[#c9a84c] shadow-[0_20px_60px_rgba(201,168,76,0.25)] ring-4 ring-[#c9a84c]/10 hover:shadow-[0_25px_65px_rgba(201,168,76,0.3)] grayscale-0" 
+          : "cursor-pointer pointer-events-auto border border-white/70 shadow-[0_15px_40px_rgba(28,43,30,0.08)] grayscale"
       }`}
     >
       {/* Top Gold Hover Accent Bar */}
@@ -174,20 +177,20 @@ function ProjectCard({
         isActive ? "w-full" : "w-0"
       }`} />
 
-      {/* ── Top Project Image Showcase (Clickable redirect when active) ── */}
+      {/* ── Top Project Image Showcase ── */}
       <div className="relative w-full h-56 overflow-hidden bg-[#1c2b1e]/5" style={{ transform: "translateZ(25px)" }}>
         {isActive ? (
           <Link
             href={`/projects/${p.slug}`}
             onClick={(e) => e.stopPropagation()}
-            className="block w-full h-full relative"
+            className="block w-full h-full relative group"
           >
             <Image
               src={p.image}
               alt={p.name}
               fill
               sizes="(max-width: 768px) 85vw, 410px"
-              className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] scale-105 hover:scale-110"
+              className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] scale-105 group-hover:scale-110"
               priority={index < 2}
             />
           </Link>
@@ -197,7 +200,7 @@ function ProjectCard({
             alt={p.name}
             fill
             sizes="(max-width: 768px) 85vw, 410px"
-            className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] scale-100 grayscale-[30%]"
+            className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] scale-100" // grayscale relies on parent div now
             priority={index < 2}
           />
         )}
@@ -205,7 +208,7 @@ function ProjectCard({
         <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-black/20 opacity-85 pointer-events-none transition-opacity duration-500" />
         
         {/* Floating Element Symbol Badge over image */}
-        <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md border border-white flex items-center justify-center text-[#c9a84c] text-xl shadow-md pointer-events-none transition-transform duration-500">
+        <div className={`absolute top-4 left-4 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md border flex items-center justify-center text-[#c9a84c] text-xl shadow-md pointer-events-none transition-colors duration-500 ${isActive ? 'border-[#c9a84c]/50' : 'border-white'}`}>
           {p.elementSymbol}
         </div>
 
@@ -263,13 +266,13 @@ function ProjectCard({
             </p>
           </div>
 
-          {/* ── Primary Link Redirect Row (routes to app/projects/[slug]/page.tsx) ── */}
+          {/* ── Primary Link Redirect Row ── */}
           <div className="mt-5 pt-2 flex items-center justify-between border-t border-[#1c2b1e]/10 transition-colors">
             {isActive ? (
               <Link
                 href={`/projects/${p.slug}`}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full flex items-center justify-between group/btn py-1.5 px-3 -mx-3 rounded-lg hover:bg-[#1c2b1e]/5 transition-all duration-300"
+                className="w-full flex items-center justify-between group/btn py-1.5 px-3 -mx-3 rounded-lg bg-[#c9a84c]/5 hover:bg-[#c9a84c]/15 transition-all duration-300"
               >
                 <span className="text-[11px] tracking-[0.2em] uppercase font-bold text-[#1c2b1e] font-jakarta group-hover/btn:text-[#c9a84c] transition-colors">
                   Explore Project
@@ -295,7 +298,7 @@ function ViewAllLink() {
   return (
     <Link
       href="/projects"
-      className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-[#1c2b1e] hover:text-[#c9a84c] pb-1 border-b-2 border-[#c9a84c]/40 hover:border-[#c9a84c] font-jakarta transition-all duration-300 group"
+      className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-[#1c2b1e] hover:text-[#c9a84c] pb-1 border-b-2 border-[#c9a84c]/40 hover:border-[#c9a84c] font-jakarta transition-colors duration-300 group"
     >
       <span>View all projects</span>
       <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
@@ -359,27 +362,8 @@ export default function Projects() {
             </h2>
           </div>
           
-          {/* Controls: Left / Right Arrows + View All */}
           <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
             <ViewAllLink />
-            
-            {/* Carousel Arrow Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handlePrev}
-                aria-label="Previous project on sphere"
-                className="w-11 h-11 rounded-full border border-[#1c2b1e]/20 bg-white/60 backdrop-blur-md flex items-center justify-center text-[#1c2b1e] hover:bg-[#1c2b1e] hover:text-[#c9a84c] hover:border-[#1c2b1e] transition-all duration-300 shadow-sm cursor-pointer"
-              >
-                ←
-              </button>
-              <button
-                onClick={handleNext}
-                aria-label="Next project on sphere"
-                className="w-11 h-11 rounded-full border border-[#1c2b1e]/20 bg-white/60 backdrop-blur-md flex items-center justify-center text-[#1c2b1e] hover:bg-[#1c2b1e] hover:text-[#c9a84c] hover:border-[#1c2b1e] transition-all duration-300 shadow-sm cursor-pointer"
-              >
-                →
-              </button>
-            </div>
           </div>
         </motion.div>
 
@@ -388,6 +372,15 @@ export default function Projects() {
           className="relative w-full h-[620px] flex items-center justify-center cursor-grab active:cursor-grabbing"
           style={{ perspective: "1200px" }}
         >
+          {/* ── Left Navigation Arrow ── */}
+          <button
+            onClick={handlePrev}
+            aria-label="Previous project on sphere"
+            className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full border border-[#1c2b1e]/10 bg-white/80 backdrop-blur-md flex items-center justify-center text-[#1c2b1e] hover:bg-[#1c2b1e] hover:text-[#c9a84c] hover:border-[#1c2b1e] transition-colors duration-300 shadow-[0_5px_15px_rgba(28,43,30,0.1)] cursor-pointer"
+          >
+            ←
+          </button>
+
           {/* Swipe / Drag gesture detector wrapper */}
           <motion.div
             className="absolute inset-0 w-full h-full z-20"
@@ -415,6 +408,15 @@ export default function Projects() {
               />
             ))}
           </motion.div>
+
+          {/* ── Right Navigation Arrow ── */}
+          <button
+            onClick={handleNext}
+            aria-label="Next project on sphere"
+            className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full border border-[#1c2b1e]/10 bg-white/80 backdrop-blur-md flex items-center justify-center text-[#1c2b1e] hover:bg-[#1c2b1e] hover:text-[#c9a84c] hover:border-[#1c2b1e] transition-colors duration-300 shadow-[0_5px_15px_rgba(28,43,30,0.1)] cursor-pointer"
+          >
+            →
+          </button>
         </div>
 
         {/* ── Spherical Pagination Indicators ── */}
