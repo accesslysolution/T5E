@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import { getProjectBySlug, ALL_PROJECTS } from "@/lib/projects";
+import { getComplianceDocs } from "@/lib/complianceDocs";
 import ProjectDetailClient from "@/components/ProjectDetailClient";
+import EnvironmentCompliance from "@/components/EnvironmentCompliance";
 
 export function generateStaticParams() {
   return ALL_PROJECTS.map((p) => ({ slug: p.slug }));
@@ -23,5 +23,18 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   const project = getProjectBySlug(slug);
   if (!project) notFound();
 
-  return <ProjectDetailClient project={project} />;
+  // Runs at build time. Empty array → the section is never rendered.
+  const complianceDocs = getComplianceDocs(project.pdfFolder);
+
+  return (
+    <>
+      <ProjectDetailClient project={project} />
+      <EnvironmentCompliance
+        documents={complianceDocs}
+        projectName={project.name}
+        reraNumber={project.reraNumber}
+        id={`environment-${project.slug}`}
+      />
+    </>
+  );
 }

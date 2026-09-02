@@ -19,6 +19,9 @@ export type ProjectData = {
   galleryImages: string[];
   highlights: { label: string; value: string }[];
   about: string;
+  /** Folder name under /public/ holding this project's compliance PDFs.
+   *  Omit (or point at a folder with no PDFs) to hide the compliance section. */
+  pdfFolder?: string;
 };
 
 export const ALL_PROJECTS: ProjectData[] = [
@@ -39,6 +42,7 @@ export const ALL_PROJECTS: ProjectData[] = [
     gradient: "linear-gradient(160deg, #2C1F0E 0%, #1C2B1E 100%)",
     reraNumber: "P52100077890",
     qrImage: "/img/qr-chaitanya.png",
+    pdfFolder: "siddhivinayakchaitanya",
     heroImages: ["/img/chaitanya-1.jpeg", "/img/chaitanya-2.jpeg"],
     galleryImages: ["/img/element-10.jpeg", "/img/element-11.jpeg", "/img/element-12.jpeg"],
     highlights: [
@@ -68,6 +72,7 @@ export const ALL_PROJECTS: ProjectData[] = [
     gradient: "linear-gradient(160deg, #1A1E2E 0%, #1C2B1E 100%)",
     reraNumber: "P52100078901",
     qrImage: "/img/qr-apex.png",
+    pdfFolder: "t5e_appex",
     heroImages: ["/img/apex-1.jpeg"],
     galleryImages: ["/img/element-01.jpeg", "/img/element-04.jpeg", "/img/element-06.jpeg"],
     highlights: [
@@ -97,6 +102,7 @@ export const ALL_PROJECTS: ProjectData[] = [
     gradient: "linear-gradient(160deg, #1C2B1E 0%, #1A2530 100%)",
     reraNumber: "P52100079012",
     qrImage: "/img/qr-vishwa.png",
+    pdfFolder: "siddhivinayakvishwa",
     heroImages: ["/img/vishwa-1.jpeg"],
     galleryImages: ["/img/element-02.jpeg", "/img/element-05.jpeg", "/img/element-07.jpeg"],
     highlights: [
@@ -126,6 +132,7 @@ export const ALL_PROJECTS: ProjectData[] = [
     gradient: "linear-gradient(160deg, #0E1E1A 0%, #1C2B1E 100%)",
     reraNumber: "P52100080123",
     qrImage: "/img/qr-element.png",
+    pdfFolder: "the_elements",
     heroImages: [],
     galleryImages: ["/img/element-03.jpeg", "/img/element-08.jpeg", "/img/element-09.jpeg"],
     highlights: [
