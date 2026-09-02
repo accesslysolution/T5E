@@ -8,7 +8,7 @@ const ELEMENTS = [
     number: "01",
     name: "Prithvi",
     english: "Earth",
-    symbol: "⬡",
+    symbol: "⛰︎",
     tagline: "Structural Integrity & Endurance",
     description:
       "Every foundation we lay honours the land. Structural integrity, material quality, and site sensitivity define our construction ethos. We build to outlast generations.",
@@ -20,7 +20,7 @@ const ELEMENTS = [
     number: "02",
     name: "Jal",
     english: "Water",
-    symbol: "◈",
+    symbol: "≋",
     tagline: "Serenity & Restorative Flow",
     description:
       "Serenity and flow. Thoughtful water planning, rainwater harvesting, and calm, restorative zen gardens. Homes engineered to adapt to the natural rhythm of life.",
@@ -32,7 +32,7 @@ const ELEMENTS = [
     number: "03",
     name: "Agni",
     english: "Fire",
-    symbol: "△",
+    symbol: "✺",
     tagline: "Energy, Light & Vitality",
     description:
       "Warmth and dynamic energy. From thoughtfully oriented solar lighting to the vibrancy of community gathering lounges, we create homes that feel truly alive.",
@@ -44,7 +44,7 @@ const ELEMENTS = [
     number: "04",
     name: "Vayu",
     english: "Air",
-    symbol: "○",
+    symbol: "༄",
     tagline: "Natural Cross-Ventilation",
     description:
       "Cross-ventilation engineered from the blueprint. Double-height windows, green sky corridors, and open cantilevered terraces ensure every residence breathes naturally.",
@@ -56,7 +56,7 @@ const ELEMENTS = [
     number: "05",
     name: "Akash",
     english: "Space",
-    symbol: "◻",
+    symbol: "✧",
     tagline: "The Canvas of Possibility",
     description:
       "The ultimate luxury is space. Generous ceiling heights, minimal column intrusion, and acoustic privacy give each resident the freedom and quiet to grow into themselves.",
@@ -170,19 +170,21 @@ export default function Philosophy() {
                   />
                 </div>
 
-                {/* Top Number + Symbol Accent */}
+                {/* Top Number + White Circular Icon Accent */}
                 <div className="flex items-start justify-between z-10">
                   <span className="text-[11px] font-bold tracking-[0.25em] font-jakarta text-white/85 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-md border border-white/25">
                     {el.number}
                   </span>
-                  <motion.span
-                    className="text-3xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+                  
+                  {/* Frosted White Circular Block behind Icon */}
+                  <motion.div
+                    className="w-12 h-12 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-md shadow-[0_4px_15px_rgba(0,0,0,0.15)] border border-white/50 text-2xl"
                     style={{ color: el.color }}
                     animate={isActive ? { rotate: [0, 15, 0], scale: [1, 1.1, 1] } : {}}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   >
                     {el.symbol}
-                  </motion.span>
+                  </motion.div>
                 </div>
 
                 {/* Middle / Bottom Content */}
@@ -312,15 +314,20 @@ export default function Philosophy() {
                             ({el.english})
                           </span>
                         </div>
-                        <span
-                          className="text-2xl transition-transform duration-300"
-                          style={{
-                            color: el.color,
-                            transform: isActive ? "rotate(45deg)" : "none",
-                          }}
-                        >
-                          {isActive ? "+" : el.symbol}
-                        </span>
+                        
+                        {/* Circular White Block behind Mobile Icon */}
+                        <div className="w-10 h-10 flex flex-shrink-0 items-center justify-center rounded-full bg-white/80 border border-white/60 shadow-sm">
+                          <span
+                            className="text-xl transition-transform duration-300"
+                            style={{
+                              color: el.color,
+                              transform: isActive ? "rotate(45deg)" : "none",
+                            }}
+                          >
+                            {isActive ? "+" : el.symbol}
+                          </span>
+                        </div>
+
                       </div>
 
                       <AnimatePresence>
