@@ -50,7 +50,6 @@ const TESTIMONIALS = [
     location: "Prithvi Heights, Wagholi",
     year: "2023",
     projectType: "3 BHK Bespoke Residence",
-    duration: "0:42",
   },
   {
     id: "surekha",
@@ -59,7 +58,6 @@ const TESTIMONIALS = [
     location: "Vayu Greens, Baner",
     year: "2022",
     projectType: "2 BHK Zen Apartment",
-    duration: "0:35",
   },
   {
     id: "amol",
@@ -68,7 +66,6 @@ const TESTIMONIALS = [
     location: "Vayu Greens, Baner",
     year: "2019",
     projectType: "2 BHK Residence",
-    duration: "0:51",
   },
 ];
 
@@ -231,7 +228,7 @@ export default function Legacy() {
         </div>
 
         {/* =========================================================
-            PART 2: RESIDENT VOICES (Editorial Audio Storyboard)
+            PART 2: RESIDENT VOICES (Editorial Storyboard)
            ========================================================= */}
         <div>
           <motion.div
@@ -256,7 +253,7 @@ export default function Legacy() {
               </h2>
             </div>
             <p className="text-[#1c2b1e]/70 text-sm md:text-base max-w-xs leading-relaxed">
-              Select a resident below to listen to their firsthand experience living inside a T5E ecosystem.
+              Select a resident below to read about their firsthand experience living inside a T5E ecosystem.
             </p>
           </motion.div>
 
@@ -315,46 +312,12 @@ export default function Legacy() {
               })}
             </div>
 
-            {/* Right Column: Editorial Audio Canvas (8 Cols) */}
-            <div className="lg:col-span-8 rounded-3xl bg-white/85 backdrop-blur-2xl border border-white p-8 sm:p-12 lg:p-16 shadow-[0_20px_60px_rgba(28,43,30,0.06)] relative overflow-hidden flex flex-col justify-between min-h-[420px]">
+            {/* Right Column: Editorial Text Canvas (8 Cols) */}
+            <div className="lg:col-span-8 rounded-3xl bg-white/85 backdrop-blur-2xl border border-white p-8 sm:p-12 lg:p-16 shadow-[0_20px_60px_rgba(28,43,30,0.06)] relative overflow-hidden flex flex-col justify-center min-h-[420px]">
               
               {/* Giant Watermark Quotation */}
               <div className="absolute top-[-20px] right-6 text-[#c9a84c]/10 text-[14rem] md:text-[18rem] font-serif leading-none select-none pointer-events-none font-playfair">
                 &ldquo;
-              </div>
-
-              {/* Top Audio Player Bar (Simulated Living Voice) */}
-              <div className="relative z-10 flex items-center justify-between border-b border-[#1c2b1e]/10 pb-6 mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#1c2b1e] text-[#c9a84c] flex items-center justify-center shadow-md animate-pulse">
-                    <span>▶</span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#1c2b1e] font-jakarta">
-                      Resident Voice Log // {currentStory.id.toUpperCase()}
-                    </p>
-                    <p className="text-[10px] text-[#1c2b1e]/50 font-mono">
-                      AUDIO REC · {currentStory.duration} MIN · VERIFIED T5E HOMEOWNER
-                    </p>
-                  </div>
-                </div>
-
-                {/* Animated Ambient Soundwave */}
-                <div className="hidden sm:flex items-center gap-1 h-6 px-4 py-1 rounded-full bg-[#1c2b1e]/5 border border-[#1c2b1e]/10">
-                  {[40, 80, 30, 90, 60, 100, 45, 70, 35, 85, 50, 95].map((height, i) => (
-                    <motion.span
-                      key={i}
-                      className="w-[2px] bg-[#c9a84c] rounded-full"
-                      animate={{ height: [`${height * 0.2}%`, `${height}%`, `${height * 0.3}%`] }}
-                      transition={{
-                        duration: 1.2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: i * 0.08,
-                      }}
-                    />
-                  ))}
-                </div>
               </div>
 
               {/* Dynamic Quotation Content */}
@@ -367,7 +330,7 @@ export default function Legacy() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <p className="text-2xl sm:text-3xl lg:text-4xl text-[#1c2b1e] leading-[1.45] italic font-playfair mb-8">
+                    <p className="text-2xl sm:text-3xl lg:text-4xl text-[#1c2b1e] leading-[1.45] italic font-playfair mb-8 pt-4">
                       &ldquo;{currentStory.quote}&rdquo;
                     </p>
 

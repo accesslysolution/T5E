@@ -25,7 +25,7 @@ const LINKS = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Projects", href: "/#projects" },
-  { label: "Environment", href: "/environment" },
+  { label: "Core Values", href: "/core_values" },
   { label: "Legacy", href: "/#legacy" },
   { label: "Contact", href: "/#contact" },
 ] as const;
